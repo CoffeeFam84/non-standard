@@ -15,28 +15,43 @@ function App() {
     setInputCode(event.target.value);
   }
   const onCalcClick = () => {
-    const result = inputCode.split('\n').reduce(getNonStandartCount, 0)
+    const result = inputCode.split('\n').reduce(getNonStandartCount, { total: 0, isComment: false }).total;
     setResultMessage("The number of non standard lines: " + result);
   }
 
-  const getNonStandartCount = (total, line) => {
+  const getNonStandartCount = (result, line) => {
     line = line.trim();
+    let flag = true;
+    if (result.isComment) {
+      flag = false;
+    }
+    if (RegExp('/[*].*').test(line)) {
+      result.isComment = true;
+      flag = false;
+    }
+    if (RegExp('.*[*]/').test(line)) {
+      result.isComment = false;
+      flag = false;
+    }
     if (line.length == 0) {
-      return total;
+      flag = false;
     }
     if (line == '}') {
-      return total;
+      flag = false;
     }
     if (RegExp('//.*').test(line)) {
-      return total;
+      flag = false;
     }
     if (RegExp('pragma .*').test(line)) {
-      return total;
+      flag = false;
     }
     if (RegExp('import .*@openzeppelin/').test(line)) {
-      return total;
+      flag = false;
     }
-    return total + 1;
+    if (flag) {
+      result.total++;
+    }
+    return result;
   }
   return (
     <div className="App">
